@@ -1,0 +1,31 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PostureScannerReadOnly",
+      "Effect": "Allow",
+      "Action": [
+        "sts:GetCallerIdentity",
+        "iam:GetAccountSummary",
+        "iam:GetAccountPasswordPolicy",
+        "iam:GenerateCredentialReport",
+        "iam:GetCredentialReport",
+        "iam:ListUsers",
+        "iam:ListAttachedUserPolicies",
+        "s3:ListAllMyBuckets",
+        "s3:GetBucketPublicAccessBlock",
+        "s3:GetEncryptionConfiguration",
+        "cloudtrail:DescribeTrails",
+        "cloudtrail:GetTrailStatus",
+        "guardduty:ListDetectors",
+        "guardduty:GetDetector",
+        "ec2:DescribeSecurityGroups",
+        "ec2:GetEbsEncryptionByDefault",
+        "kms:ListKeys",
+        "kms:DescribeKey",
+        "kms:GetKeyRotationStatus"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

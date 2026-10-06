@@ -1,0 +1,5 @@
+-r requirements.txt
+moto[iam,s3,ec2,kms,cloudtrail,guardduty,sts]>=5.0
+pytest>=8.0
+ruff>=0.5
+bandit>=1.7

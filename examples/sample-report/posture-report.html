@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AWS Posture Report - 123456789012</title>
+<style>
+:root{--bg:#f7f7f5;--fg:#1d1d1b;--muted:#6b6b66;--card:#fff;--line:#e3e2dd;
+--crit:#9b1c1c;--high:#c2410c;--med:#a16207;--low:#4b5563;--pass:#15803d;--fail:#b91c1c}
+@media (prefers-color-scheme:dark){:root{--bg:#161615;--fg:#ecebe6;--muted:#a3a29c;--card:#1f1f1d;--line:#33332f}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);
+font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:32px 16px}
+h1{margin:0 0 4px;font-size:24px}.meta{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:24px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px}
+.card b{display:block;font-size:26px}.card span{color:var(--muted);font-size:12px;text-transform:uppercase}
+.sev-CRITICAL{color:var(--crit)}.sev-HIGH{color:var(--high)}.sev-MEDIUM{color:var(--med)}.sev-LOW{color:var(--low)}
+.wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:8px}
+table{width:100%;border-collapse:collapse}th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:12px;color:var(--muted);text-transform:uppercase}
+.pill{font-weight:600;font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid currentColor}
+.PASS{color:var(--pass)}.FAIL{color:var(--fail)}.ERROR{color:var(--muted)}
+details{margin-top:4px}summary{cursor:pointer;color:var(--muted)}code{font-size:12px;word-break:break-all}
+</style>
+</head>
+<body><main>
+<h1>AWS Cloud Posture Report</h1>
+<div class="meta">Account 123456789012 &middot; Regions us-east-1 &middot; 2026-10-06T21:03:04+00:00</div>
+<div class="grid">
+  <div class="card"><span>Score</span><b>47.4%</b></div>
+  <div class="card"><span>Failed</span><b class="FAIL">10</b></div>
+  <div class="card"><span>Passed</span><b class="PASS">9</b></div>
+  
+  <div class="card"><span>CRITICAL failures</span><b class="sev-CRITICAL">1</b></div>
+  
+  <div class="card"><span>HIGH failures</span><b class="sev-HIGH">3</b></div>
+  
+  <div class="card"><span>MEDIUM failures</span><b class="sev-MEDIUM">6</b></div>
+  
+  <div class="card"><span>LOW failures</span><b class="sev-LOW">0</b></div>
+  
+</div>
+<div class="wrap"><table>
+<thead><tr><th>Status</th><th>Severity</th><th>Check</th><th>Resource</th><th>Region</th><th>Detail</th></tr></thead>
+<tbody>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-CRITICAL">CRITICAL</td>
+ <td><b>IAM-001</b> Root account has MFA enabled<br><small class="meta">CIS 1.5</small></td>
+ <td>root</td><td>global</td>
+ <td>Root MFA is NOT enabled.<details><summary>Remediation</summary><code>Sign in as root, open Security credentials, and assign a hardware or virtual MFA device to the root user.</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-HIGH">HIGH</td>
+ <td><b>IAM-005</b> No IAM users have AdministratorAccess attached directly<br><small class="meta">CIS 1.15, 1.16</small></td>
+ <td>legacy-admin</td><td>global</td>
+ <td>AdministratorAccess attached directly to user.<details><summary>Remediation</summary><code>Detach admin policies from users; grant privileges through groups or assumable roles with least-privilege policies.</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-HIGH">HIGH</td>
+ <td><b>NET-001</b> No security groups allow 0.0.0.0/0 or ::/0 to SSH/RDP<br><small class="meta">CIS 5.2, 5.3</small></td>
+ <td>sg-e41c17669814310c7 (bastion)</td><td>us-east-1</td>
+ <td>Ports open to the internet: [22]<details><summary>Remediation</summary><code>Remove the world-open ingress rule and restrict SSH/RDP to known CIDRs, or use SSM Session Manager instead of open admin ports.</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-HIGH">HIGH</td>
+ <td><b>S3-001</b> S3 Block Public Access enabled on buckets<br><small class="meta">CIS 2.1.4</small></td>
+ <td>acme-public-assets</td><td>global</td>
+ <td>Public access block missing or incomplete.<details><summary>Remediation</summary><code>aws s3api put-public-access-block --bucket &lt;name&gt; --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-MEDIUM">MEDIUM</td>
+ <td><b>EC2-001</b> EBS encryption by default is enabled<br><small class="meta">CIS 2.2.1</small></td>
+ <td>ebs-default</td><td>us-east-1</td>
+ <td>EBS encryption by default disabled.<details><summary>Remediation</summary><code>aws ec2 enable-ebs-encryption-by-default --region &lt;region&gt;</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-MEDIUM">MEDIUM</td>
+ <td><b>IAM-003</b> IAM password policy meets minimum strength<br><small class="meta">CIS 1.8, 1.9</small></td>
+ <td>account</td><td>global</td>
+ <td>Password policy weak: minimum length &lt; 14, reuse prevention &lt; 24<details><summary>Remediation</summary><code>aws iam update-account-password-policy --minimum-password-length 14 --password-reuse-prevention 24</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-MEDIUM">MEDIUM</td>
+ <td><b>KMS-001</b> Customer-managed symmetric KMS keys have rotation enabled<br><small class="meta">CIS 3.6</small></td>
+ <td>9b0be007-3302-4bb3-8421-4c9b5305f195</td><td>us-east-1</td>
+ <td>Rotation disabled.<details><summary>Remediation</summary><code>aws kms enable-key-rotation --key-id &lt;key-id&gt;</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-MEDIUM">MEDIUM</td>
+ <td><b>LOG-002</b> GuardDuty is enabled in the region<br><small class="meta">AWS FSBP GuardDuty.1 (supplemental)</small></td>
+ <td>guardduty</td><td>us-east-1</td>
+ <td>No enabled GuardDuty detector in region.<details><summary>Remediation</summary><code>aws guardduty create-detector --enable --region &lt;region&gt;</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-MEDIUM">MEDIUM</td>
+ <td><b>S3-002</b> S3 buckets have default encryption configured<br><small class="meta">CIS 2.1.1 (v1.4)</small></td>
+ <td>acme-public-assets</td><td>global</td>
+ <td>No default encryption configured.<details><summary>Remediation</summary><code>aws s3api put-bucket-encryption --bucket &lt;name&gt; --server-side-encryption-configuration &#39;{&#34;Rules&#34;:[{&#34;ApplyServerSideEncryptionByDefault&#34;:{&#34;SSEAlgorithm&#34;:&#34;aws:kms&#34;}}]}&#39;</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-MEDIUM">MEDIUM</td>
+ <td><b>S3-002</b> S3 buckets have default encryption configured<br><small class="meta">CIS 2.1.1 (v1.4)</small></td>
+ <td>acme-audit-logs</td><td>global</td>
+ <td>No default encryption configured.<details><summary>Remediation</summary><code>aws s3api put-bucket-encryption --bucket &lt;name&gt; --server-side-encryption-configuration &#39;{&#34;Rules&#34;:[{&#34;ApplyServerSideEncryptionByDefault&#34;:{&#34;SSEAlgorithm&#34;:&#34;aws:kms&#34;}}]}&#39;</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill PASS">PASS</span></td>
+ <td class="sev-CRITICAL">CRITICAL</td>
+ <td><b>IAM-002</b> No access keys exist for the root account<br><small class="meta">CIS 1.4</small></td>
+ <td>root</td><td>global</td>
+ <td>Root has no access keys.</td>
+</tr>
+
+<tr>
+ <td><span class="pill PASS">PASS</span></td>
+ <td class="sev-HIGH">HIGH</td>
+ <td><b>IAM-005</b> No IAM users have AdministratorAccess attached directly<br><small class="meta">CIS 1.15, 1.16</small></td>
+ <td>ci-deployer</td><td>global</td>
+ <td>No admin policy attached directly.</td>
+</tr>
+
+<tr>
+ <td><span class="pill PASS">PASS</span></td>
+ <td class="sev-HIGH">HIGH</td>
+ <td><b>LOG-001</b> A multi-region CloudTrail trail is logging with log file validation<br><small class="meta">CIS 3.1, 3.2</small></td>
+ <td>main-trail</td><td>global</td>
+ <td>Multi-region trail logging with log file validation.</td>
+</tr>
+
+<tr>
+ <td><span class="pill PASS">PASS</span></td>
+ <td class="sev-HIGH">HIGH</td>
+ <td><b>NET-001</b> No security groups allow 0.0.0.0/0 or ::/0 to SSH/RDP<br><small class="meta">CIS 5.2, 5.3</small></td>
+ <td>sg-33abcd18b397b0534 (default)</td><td>us-east-1</td>
+ <td>No world-open SSH/RDP.</td>
+</tr>
+
+<tr>
+ <td><span class="pill PASS">PASS</span></td>
+ <td class="sev-HIGH">HIGH</td>
+ <td><b>NET-001</b> No security groups allow 0.0.0.0/0 or ::/0 to SSH/RDP<br><small class="meta">CIS 5.2, 5.3</small></td>
+ <td>sg-b84f5ff88b9a49740 (default)</td><td>us-east-1</td>
+ <td>No world-open SSH/RDP.</td>
+</tr>
+
+<tr>
+ <td><span class="pill PASS">PASS</span></td>
+ <td class="sev-HIGH">HIGH</td>
+ <td><b>S3-001</b> S3 Block Public Access enabled on buckets<br><small class="meta">CIS 2.1.4</small></td>
+ <td>acme-audit-logs</td><td>global</td>
+ <td>All four public access block settings enabled.</td>
+</tr>
+
+<tr>
+ <td><span class="pill PASS">PASS</span></td>
+ <td class="sev-MEDIUM">MEDIUM</td>
+ <td><b>IAM-004</b> Credentials unused for 90+ days are disabled<br><small class="meta">CIS 1.12</small></td>
+ <td>ci-deployer</td><td>global</td>
+ <td>No stale credentials.</td>
+</tr>
+
+<tr>
+ <td><span class="pill PASS">PASS</span></td>
+ <td class="sev-MEDIUM">MEDIUM</td>
+ <td><b>IAM-004</b> Credentials unused for 90+ days are disabled<br><small class="meta">CIS 1.12</small></td>
+ <td>legacy-admin</td><td>global</td>
+ <td>No stale credentials.</td>
+</tr>
+
+<tr>
+ <td><span class="pill PASS">PASS</span></td>
+ <td class="sev-MEDIUM">MEDIUM</td>
+ <td><b>KMS-001</b> Customer-managed symmetric KMS keys have rotation enabled<br><small class="meta">CIS 3.6</small></td>
+ <td>85424210-67cb-4487-b12d-b5849d757574</td><td>us-east-1</td>
+ <td>Rotation enabled.</td>
+</tr>
+
+</tbody></table></div>
+</main></body></html>

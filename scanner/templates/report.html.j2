@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AWS Posture Report - {{ r.account_id }}</title>
+<style>
+:root{--bg:#f7f7f5;--fg:#1d1d1b;--muted:#6b6b66;--card:#fff;--line:#e3e2dd;
+--crit:#9b1c1c;--high:#c2410c;--med:#a16207;--low:#4b5563;--pass:#15803d;--fail:#b91c1c}
+@media (prefers-color-scheme:dark){:root{--bg:#161615;--fg:#ecebe6;--muted:#a3a29c;--card:#1f1f1d;--line:#33332f}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);
+font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:32px 16px}
+h1{margin:0 0 4px;font-size:24px}.meta{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:24px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px}
+.card b{display:block;font-size:26px}.card span{color:var(--muted);font-size:12px;text-transform:uppercase}
+.sev-CRITICAL{color:var(--crit)}.sev-HIGH{color:var(--high)}.sev-MEDIUM{color:var(--med)}.sev-LOW{color:var(--low)}
+.wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:8px}
+table{width:100%;border-collapse:collapse}th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:12px;color:var(--muted);text-transform:uppercase}
+.pill{font-weight:600;font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid currentColor}
+.PASS{color:var(--pass)}.FAIL{color:var(--fail)}.ERROR{color:var(--muted)}
+details{margin-top:4px}summary{cursor:pointer;color:var(--muted)}code{font-size:12px;word-break:break-all}
+</style>
+</head>
+<body><main>
+<h1>AWS Cloud Posture Report</h1>
+<div class="meta">Account {{ r.account_id }} &middot; Regions {{ r.regions|join(", ") }} &middot; {{ r.started_at }}</div>
+<div class="grid">
+  <div class="card"><span>Score</span><b>{{ s.score }}%</b></div>
+  <div class="card"><span>Failed</span><b class="FAIL">{{ s.failed }}</b></div>
+  <div class="card"><span>Passed</span><b class="PASS">{{ s.passed }}</b></div>
+  {% for sev, c in s.by_severity.items() %}
+  <div class="card"><span>{{ sev }} failures</span><b class="sev-{{ sev }}">{{ c.FAIL }}</b></div>
+  {% endfor %}
+</div>
+<div class="wrap"><table>
+<thead><tr><th>Status</th><th>Severity</th><th>Check</th><th>Resource</th><th>Region</th><th>Detail</th></tr></thead>
+<tbody>
+{% for f in findings %}
+<tr>
+ <td><span class="pill {{ f.status.value }}">{{ f.status.value }}</span></td>
+ <td class="sev-{{ f.severity.value }}">{{ f.severity.value }}</td>
+ <td><b>{{ f.check_id }}</b> {{ f.title }}<br><small class="meta">{{ f.cis_ref }}</small></td>
+ <td>{{ f.resource }}</td><td>{{ f.region }}</td>
+ <td>{{ f.message }}{% if f.status.value != "PASS" %}<details><summary>Remediation</summary><code>{{ f.remediation }}</code></details>{% endif %}</td>
+</tr>
+{% endfor %}
+</tbody></table></div>
+</main></body></html>

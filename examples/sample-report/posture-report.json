@@ -1,0 +1,247 @@
+{
+  "account_id": "123456789012",
+  "regions": [
+    "us-east-1"
+  ],
+  "started_at": "2026-10-06T21:03:04+00:00",
+  "summary": {
+    "total": 19,
+    "passed": 9,
+    "failed": 10,
+    "errors": 0,
+    "score": 47.4,
+    "by_severity": {
+      "CRITICAL": {
+        "PASS": 1,
+        "FAIL": 1,
+        "ERROR": 0
+      },
+      "HIGH": {
+        "PASS": 5,
+        "FAIL": 3,
+        "ERROR": 0
+      },
+      "MEDIUM": {
+        "PASS": 3,
+        "FAIL": 6,
+        "ERROR": 0
+      },
+      "LOW": {
+        "PASS": 0,
+        "FAIL": 0,
+        "ERROR": 0
+      }
+    }
+  },
+  "findings": [
+    {
+      "check_id": "EC2-001",
+      "title": "EBS encryption by default is enabled",
+      "cis_ref": "CIS 2.2.1",
+      "severity": "MEDIUM",
+      "status": "FAIL",
+      "resource": "ebs-default",
+      "region": "us-east-1",
+      "message": "EBS encryption by default disabled.",
+      "remediation": "aws ec2 enable-ebs-encryption-by-default --region <region>"
+    },
+    {
+      "check_id": "IAM-001",
+      "title": "Root account has MFA enabled",
+      "cis_ref": "CIS 1.5",
+      "severity": "CRITICAL",
+      "status": "FAIL",
+      "resource": "root",
+      "region": "global",
+      "message": "Root MFA is NOT enabled.",
+      "remediation": "Sign in as root, open Security credentials, and assign a hardware or virtual MFA device to the root user."
+    },
+    {
+      "check_id": "IAM-002",
+      "title": "No access keys exist for the root account",
+      "cis_ref": "CIS 1.4",
+      "severity": "CRITICAL",
+      "status": "PASS",
+      "resource": "root",
+      "region": "global",
+      "message": "Root has no access keys.",
+      "remediation": "Sign in as root and delete all root access keys; use IAM roles instead."
+    },
+    {
+      "check_id": "IAM-003",
+      "title": "IAM password policy meets minimum strength",
+      "cis_ref": "CIS 1.8, 1.9",
+      "severity": "MEDIUM",
+      "status": "FAIL",
+      "resource": "account",
+      "region": "global",
+      "message": "Password policy weak: minimum length < 14, reuse prevention < 24",
+      "remediation": "aws iam update-account-password-policy --minimum-password-length 14 --password-reuse-prevention 24"
+    },
+    {
+      "check_id": "IAM-004",
+      "title": "Credentials unused for 90+ days are disabled",
+      "cis_ref": "CIS 1.12",
+      "severity": "MEDIUM",
+      "status": "PASS",
+      "resource": "ci-deployer",
+      "region": "global",
+      "message": "No stale credentials.",
+      "remediation": "Deactivate or delete passwords and access keys not used in 90 days: aws iam update-access-key --status Inactive"
+    },
+    {
+      "check_id": "IAM-004",
+      "title": "Credentials unused for 90+ days are disabled",
+      "cis_ref": "CIS 1.12",
+      "severity": "MEDIUM",
+      "status": "PASS",
+      "resource": "legacy-admin",
+      "region": "global",
+      "message": "No stale credentials.",
+      "remediation": "Deactivate or delete passwords and access keys not used in 90 days: aws iam update-access-key --status Inactive"
+    },
+    {
+      "check_id": "IAM-005",
+      "title": "No IAM users have AdministratorAccess attached directly",
+      "cis_ref": "CIS 1.15, 1.16",
+      "severity": "HIGH",
+      "status": "PASS",
+      "resource": "ci-deployer",
+      "region": "global",
+      "message": "No admin policy attached directly.",
+      "remediation": "Detach admin policies from users; grant privileges through groups or assumable roles with least-privilege policies."
+    },
+    {
+      "check_id": "IAM-005",
+      "title": "No IAM users have AdministratorAccess attached directly",
+      "cis_ref": "CIS 1.15, 1.16",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "resource": "legacy-admin",
+      "region": "global",
+      "message": "AdministratorAccess attached directly to user.",
+      "remediation": "Detach admin policies from users; grant privileges through groups or assumable roles with least-privilege policies."
+    },
+    {
+      "check_id": "KMS-001",
+      "title": "Customer-managed symmetric KMS keys have rotation enabled",
+      "cis_ref": "CIS 3.6",
+      "severity": "MEDIUM",
+      "status": "PASS",
+      "resource": "85424210-67cb-4487-b12d-b5849d757574",
+      "region": "us-east-1",
+      "message": "Rotation enabled.",
+      "remediation": "aws kms enable-key-rotation --key-id <key-id>"
+    },
+    {
+      "check_id": "KMS-001",
+      "title": "Customer-managed symmetric KMS keys have rotation enabled",
+      "cis_ref": "CIS 3.6",
+      "severity": "MEDIUM",
+      "status": "FAIL",
+      "resource": "9b0be007-3302-4bb3-8421-4c9b5305f195",
+      "region": "us-east-1",
+      "message": "Rotation disabled.",
+      "remediation": "aws kms enable-key-rotation --key-id <key-id>"
+    },
+    {
+      "check_id": "LOG-001",
+      "title": "A multi-region CloudTrail trail is logging with log file validation",
+      "cis_ref": "CIS 3.1, 3.2",
+      "severity": "HIGH",
+      "status": "PASS",
+      "resource": "main-trail",
+      "region": "global",
+      "message": "Multi-region trail logging with log file validation.",
+      "remediation": "aws cloudtrail create-trail --name org-trail --s3-bucket-name <bucket> --is-multi-region-trail --enable-log-file-validation && aws cloudtrail start-logging --name org-trail"
+    },
+    {
+      "check_id": "LOG-002",
+      "title": "GuardDuty is enabled in the region",
+      "cis_ref": "AWS FSBP GuardDuty.1 (supplemental)",
+      "severity": "MEDIUM",
+      "status": "FAIL",
+      "resource": "guardduty",
+      "region": "us-east-1",
+      "message": "No enabled GuardDuty detector in region.",
+      "remediation": "aws guardduty create-detector --enable --region <region>"
+    },
+    {
+      "check_id": "NET-001",
+      "title": "No security groups allow 0.0.0.0/0 or ::/0 to SSH/RDP",
+      "cis_ref": "CIS 5.2, 5.3",
+      "severity": "HIGH",
+      "status": "PASS",
+      "resource": "sg-33abcd18b397b0534 (default)",
+      "region": "us-east-1",
+      "message": "No world-open SSH/RDP.",
+      "remediation": "Remove the world-open ingress rule and restrict SSH/RDP to known CIDRs, or use SSM Session Manager instead of open admin ports."
+    },
+    {
+      "check_id": "NET-001",
+      "title": "No security groups allow 0.0.0.0/0 or ::/0 to SSH/RDP",
+      "cis_ref": "CIS 5.2, 5.3",
+      "severity": "HIGH",
+      "status": "PASS",
+      "resource": "sg-b84f5ff88b9a49740 (default)",
+      "region": "us-east-1",
+      "message": "No world-open SSH/RDP.",
+      "remediation": "Remove the world-open ingress rule and restrict SSH/RDP to known CIDRs, or use SSM Session Manager instead of open admin ports."
+    },
+    {
+      "check_id": "NET-001",
+      "title": "No security groups allow 0.0.0.0/0 or ::/0 to SSH/RDP",
+      "cis_ref": "CIS 5.2, 5.3",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "resource": "sg-e41c17669814310c7 (bastion)",
+      "region": "us-east-1",
+      "message": "Ports open to the internet: [22]",
+      "remediation": "Remove the world-open ingress rule and restrict SSH/RDP to known CIDRs, or use SSM Session Manager instead of open admin ports."
+    },
+    {
+      "check_id": "S3-001",
+      "title": "S3 Block Public Access enabled on buckets",
+      "cis_ref": "CIS 2.1.4",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "resource": "acme-public-assets",
+      "region": "global",
+      "message": "Public access block missing or incomplete.",
+      "remediation": "aws s3api put-public-access-block --bucket <name> --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
+    },
+    {
+      "check_id": "S3-001",
+      "title": "S3 Block Public Access enabled on buckets",
+      "cis_ref": "CIS 2.1.4",
+      "severity": "HIGH",
+      "status": "PASS",
+      "resource": "acme-audit-logs",
+      "region": "global",
+      "message": "All four public access block settings enabled.",
+      "remediation": "aws s3api put-public-access-block --bucket <name> --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
+    },
+    {
+      "check_id": "S3-002",
+      "title": "S3 buckets have default encryption configured",
+      "cis_ref": "CIS 2.1.1 (v1.4)",
+      "severity": "MEDIUM",
+      "status": "FAIL",
+      "resource": "acme-public-assets",
+      "region": "global",
+      "message": "No default encryption configured.",
+      "remediation": "aws s3api put-bucket-encryption --bucket <name> --server-side-encryption-configuration '{\"Rules\":[{\"ApplyServerSideEncryptionByDefault\":{\"SSEAlgorithm\":\"aws:kms\"}}]}'"
+    },
+    {
+      "check_id": "S3-002",
+      "title": "S3 buckets have default encryption configured",
+      "cis_ref": "CIS 2.1.1 (v1.4)",
+      "severity": "MEDIUM",
+      "status": "FAIL",
+      "resource": "acme-audit-logs",
+      "region": "global",
+      "message": "No default encryption configured.",
+      "remediation": "aws s3api put-bucket-encryption --bucket <name> --server-side-encryption-configuration '{\"Rules\":[{\"ApplyServerSideEncryptionByDefault\":{\"SSEAlgorithm\":\"aws:kms\"}}]}'"
+    }
+  ]
+}
