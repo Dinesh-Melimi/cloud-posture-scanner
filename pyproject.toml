@@ -1,11 +1,11 @@
 [project]
 name = "cloud-posture-scanner"
 version = "0.1.0"
-description = "Read-only AWS security posture scanner for a subset of CIS AWS Foundations Benchmark controls"
+description = "Read-only AWS security posture scanner for a subset of CIS AWS and GCP Foundations Benchmark controls"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Dinesh Melimi" }]
-dependencies = ["boto3>=1.34", "jinja2>=3.1"]
+dependencies = ["boto3>=1.34", "jinja2>=3.1", "google-api-python-client>=2.100", "google-auth>=2.23"]
 
 [project.scripts]
 cloud-posture-scanner = "scanner.cli:main"

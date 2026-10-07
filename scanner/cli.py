@@ -7,10 +7,8 @@ import logging
 import sys
 from pathlib import Path
 
-import boto3
-
 from scanner.checks import REGISTRY
-from scanner.engine import run_scan
+from scanner.engine import run_gcp_scan, run_scan
 from scanner.models import Severity, Status
 from scanner.report import write_reports
 
@@ -21,9 +19,11 @@ def _split(value: str | None) -> list[str] | None:
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="cloud-posture-scanner",
-                                description="Read-only AWS posture scan against CIS controls.")
+                                description="Read-only AWS or GCP posture scan against CIS controls.")
+    p.add_argument("--provider", choices=["aws", "gcp"], default="aws", help="Cloud provider (default: aws)")
     p.add_argument("--profile", help="AWS named profile")
-    p.add_argument("--regions", default="us-east-1", help="Comma-separated regions")
+    p.add_argument("--regions", default="us-east-1", help="Comma-separated AWS regions")
+    p.add_argument("--project", help="GCP project ID (required with --provider gcp)")
     p.add_argument("--checks", help="Comma-separated check IDs to run (default: all)")
     p.add_argument("--exclude", help="Comma-separated check IDs to skip")
     p.add_argument("--format", default="json,md,html", help="Any of json,md,html")
@@ -35,19 +35,47 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
-def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+def _gcp_registry():
+    from scanner.gcp import GCP_REGISTRY
+
+    return GCP_REGISTRY
+
+
+def _scan(args, gcp_adapter=None):
+    if args.provider == "gcp":
+        if gcp_adapter is None:
+            from scanner.gcp.client import GoogleApiAdapter
+
+            gcp_adapter = GoogleApiAdapter()
+        return run_gcp_scan(gcp_adapter, args.project, _split(args.checks), _split(args.exclude))
+    import boto3
+
+    session = boto3.Session(profile_name=args.profile)
+    return run_scan(session, _split(args.regions), _split(args.checks), _split(args.exclude))
+
+
+def main(argv: list[str] | None = None, gcp_adapter=None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO if args.verbose else logging.WARNING,
                         format="%(levelname)s %(message)s")
     if args.list_checks:
-        for cid in sorted(REGISTRY):
-            c = REGISTRY[cid]
+        registry = _gcp_registry() if args.provider == "gcp" else REGISTRY
+        for cid in sorted(registry):
+            c = registry[cid]
             scope = "regional" if c.regional else "global"
-            print(f"{cid:8} {c.severity.value:8} {c.cis_ref:24} {scope:8} {c.title}")
+            print(f"{cid:11} {c.severity.value:8} {c.cis_ref:31} {scope:8} {c.title}")
         return 0
 
-    session = boto3.Session(profile_name=args.profile)
-    result = run_scan(session, _split(args.regions), _split(args.checks), _split(args.exclude))
+    if args.provider == "gcp" and not args.project:
+        parser.error("--project is required with --provider gcp")
+    from scanner.gcp.client import GcpApiError
+
+    try:
+        result = _scan(args, gcp_adapter)  # tests inject a fake GCP adapter
+    except GcpApiError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
     paths = write_reports(result, Path(args.output), _split(args.format))
     s = result.summary()
     print(f"Score {s['score']}%  passed={s['passed']} failed={s['failed']} errors={s['errors']}")

@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GCP Posture Report - acme-synthetic-demo</title>
+<style>
+:root{--bg:#f7f7f5;--fg:#1d1d1b;--muted:#6b6b66;--card:#fff;--line:#e3e2dd;
+--crit:#9b1c1c;--high:#c2410c;--med:#a16207;--low:#4b5563;--pass:#15803d;--fail:#b91c1c}
+@media (prefers-color-scheme:dark){:root{--bg:#161615;--fg:#ecebe6;--muted:#a3a29c;--card:#1f1f1d;--line:#33332f}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);
+font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:32px 16px}
+h1{margin:0 0 4px;font-size:24px}.meta{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:24px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px}
+.card b{display:block;font-size:26px}.card span{color:var(--muted);font-size:12px;text-transform:uppercase}
+.sev-CRITICAL{color:var(--crit)}.sev-HIGH{color:var(--high)}.sev-MEDIUM{color:var(--med)}.sev-LOW{color:var(--low)}
+.wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:8px}
+table{width:100%;border-collapse:collapse}th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:12px;color:var(--muted);text-transform:uppercase}
+.pill{font-weight:600;font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid currentColor}
+.PASS{color:var(--pass)}.FAIL{color:var(--fail)}.ERROR{color:var(--muted)}
+details{margin-top:4px}summary{cursor:pointer;color:var(--muted)}code{font-size:12px;word-break:break-all}
+</style>
+</head>
+<body><main>
+<h1>GCP Cloud Posture Report</h1>
+<div class="card" style="margin:12px 0;border-color:var(--med)"><b style="font-size:14px">SYNTHETIC SAMPLE: generated from an in-memory fake adapter (examples/generate_sample_gcp.py). No real GCP project was scanned.</b></div>
+<div class="meta">Project acme-synthetic-demo &middot; Locations global, us-central1, us-central1-a &middot; 2026-10-07T15:04:01+00:00</div>
+<div class="grid">
+  <div class="card"><span>Score</span><b>44.0%</b></div>
+  <div class="card"><span>Failed</span><b class="FAIL">14</b></div>
+  <div class="card"><span>Passed</span><b class="PASS">11</b></div>
+  
+  <div class="card"><span>CRITICAL failures</span><b class="sev-CRITICAL">1</b></div>
+  
+  <div class="card"><span>HIGH failures</span><b class="sev-HIGH">7</b></div>
+  
+  <div class="card"><span>MEDIUM failures</span><b class="sev-MEDIUM">6</b></div>
+  
+  <div class="card"><span>LOW failures</span><b class="sev-LOW">0</b></div>
+  
+</div>
+<div class="wrap"><table>
+<thead><tr><th>Status</th><th>Severity</th><th>Check</th><th>Resource</th><th>Region</th><th>Detail</th></tr></thead>
+<tbody>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-CRITICAL">CRITICAL</td>
+ <td><b>GCP-GCS-001</b> Cloud Storage buckets are not anonymously or publicly accessible<br><small class="meta">CIS GCP 5.1</small></td>
+ <td>acme-public-assets</td><td>us-central1</td>
+ <td>Public IAM bindings: allUsers -&gt; roles/storage.objectViewer.<details><summary>Remediation</summary><code>gcloud storage buckets remove-iam-policy-binding gs://&lt;bucket&gt; --member=allUsers --role=&lt;role&gt;; enforce the constraints/storage.publicAccessPrevention org policy</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-HIGH">HIGH</td>
+ <td><b>GCP-GKE-002</b> GKE legacy authorization (ABAC) is disabled<br><small class="meta">CIS GKE 5.8.3</small></td>
+ <td>sandbox-gke</td><td>us-central1-a</td>
+ <td>Legacy ABAC enabled; RBAC can be bypassed.<details><summary>Remediation</summary><code>gcloud container clusters update &lt;cluster&gt; --location=&lt;loc&gt; --no-enable-legacy-authorization</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-HIGH">HIGH</td>
+ <td><b>GCP-IAM-001</b> No primitive Owner/Editor roles granted to users or service accounts at project level<br><small class="meta">CIS GCP 1.5 (extended to users)</small></td>
+ <td>user:contractor@example.com</td><td>global</td>
+ <td>Granted primitive role roles/editor on the project.<details><summary>Remediation</summary><code>gcloud projects remove-iam-policy-binding &lt;project&gt; --member=&lt;member&gt; --role=roles/editor and grant a narrower predefined role instead</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-HIGH">HIGH</td>
+ <td><b>GCP-IAM-001</b> No primitive Owner/Editor roles granted to users or service accounts at project level<br><small class="meta">CIS GCP 1.5 (extended to users)</small></td>
+ <td>serviceAccount:etl@acme-synthetic-demo.iam.gserviceaccount.com</td><td>global</td>
+ <td>Granted primitive role roles/editor on the project.<details><summary>Remediation</summary><code>gcloud projects remove-iam-policy-binding &lt;project&gt; --member=&lt;member&gt; --role=roles/editor and grant a narrower predefined role instead</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-HIGH">HIGH</td>
+ <td><b>GCP-IAM-002</b> Service accounts do not hold admin privileges<br><small class="meta">CIS GCP 1.5</small></td>
+ <td>etl@acme-synthetic-demo.iam.gserviceaccount.com</td><td>global</td>
+ <td>Holds admin role(s): roles/editor.<details><summary>Remediation</summary><code>gcloud projects remove-iam-policy-binding &lt;project&gt; --member=serviceAccount:&lt;email&gt; --role=&lt;admin role&gt;</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-HIGH">HIGH</td>
+ <td><b>GCP-NET-002</b> No firewall rule allows 0.0.0.0/0 to SSH (22) or RDP (3389)<br><small class="meta">CIS GCP 3.6, 3.7</small></td>
+ <td>default-allow-ssh</td><td>global</td>
+ <td>Open to the internet on SSH/22.<details><summary>Remediation</summary><code>gcloud compute firewall-rules update &lt;rule&gt; --source-ranges=&lt;trusted CIDR&gt; (or delete it and use IAP TCP forwarding: 35.235.240.0/20)</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-HIGH">HIGH</td>
+ <td><b>GCP-SQL-001</b> Cloud SQL instances do not have public IP addresses<br><small class="meta">CIS GCP 6.6</small></td>
+ <td>orders-db</td><td>us-central1</td>
+ <td>Instance has a public IPv4 address. Authorized networks include 0.0.0.0/0.<details><summary>Remediation</summary><code>Configure private IP (Private Services Access), then: gcloud sql instances patch &lt;instance&gt; --no-assign-ip</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-HIGH">HIGH</td>
+ <td><b>GCP-SQL-002</b> Cloud SQL instances require SSL/TLS for incoming connections<br><small class="meta">CIS GCP 6.4</small></td>
+ <td>orders-db</td><td>us-central1</td>
+ <td>Unencrypted connections allowed (ALLOW_UNENCRYPTED_AND_ENCRYPTED).<details><summary>Remediation</summary><code>gcloud sql instances patch &lt;instance&gt; --ssl-mode=ENCRYPTED_ONLY</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-MEDIUM">MEDIUM</td>
+ <td><b>GCP-GCS-002</b> Cloud Storage buckets have uniform bucket-level access enabled<br><small class="meta">CIS GCP 5.2</small></td>
+ <td>acme-public-assets</td><td>us-central1</td>
+ <td>Fine-grained object ACLs are still active.<details><summary>Remediation</summary><code>gcloud storage buckets update gs://&lt;bucket&gt; --uniform-bucket-level-access</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-MEDIUM">MEDIUM</td>
+ <td><b>GCP-GKE-001</b> GKE clusters use private nodes<br><small class="meta">CIS GKE 5.6.5</small></td>
+ <td>sandbox-gke</td><td>us-central1-a</td>
+ <td>Nodes have public IP addresses.<details><summary>Remediation</summary><code>gcloud container clusters update &lt;cluster&gt; --location=&lt;loc&gt; --enable-private-nodes (older clusters may need re-creation with --enable-private-nodes)</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-MEDIUM">MEDIUM</td>
+ <td><b>GCP-IAM-003</b> User-managed service account keys are rotated within 90 days<br><small class="meta">CIS GCP 1.7</small></td>
+ <td>etl@acme-synthetic-demo.iam.gserviceaccount.com/3f9a1c</td><td>global</td>
+ <td>User-managed key is 214 days old.<details><summary>Remediation</summary><code>gcloud iam service-accounts keys create new.json --iam-account=&lt;email&gt;; switch callers; gcloud iam service-accounts keys delete &lt;key-id&gt; --iam-account=&lt;email&gt;. Prefer Workload Identity / impersonation over keys.</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-MEDIUM">MEDIUM</td>
+ <td><b>GCP-KMS-001</b> Cloud KMS symmetric keys rotate at least every 90 days<br><small class="meta">CIS GCP 1.10</small></td>
+ <td>projects/acme-synthetic-demo/locations/us-central1/keyRings/app/cryptoKeys/legacy-key</td><td>us-central1</td>
+ <td>No automatic rotation schedule.<details><summary>Remediation</summary><code>gcloud kms keys update &lt;key&gt; --keyring=&lt;ring&gt; --location=&lt;loc&gt; --rotation-period=90d --next-rotation-time=&lt;RFC3339&gt;</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-MEDIUM">MEDIUM</td>
+ <td><b>GCP-LOG-001</b> Cloud Audit Logs Data Access logging enabled for all services<br><small class="meta">CIS GCP 2.1</small></td>
+ <td>acme-synthetic-demo</td><td>global</td>
+ <td>allServices audit config missing [&#39;DATA_READ&#39;, &#39;DATA_WRITE&#39;].<details><summary>Remediation</summary><code>gcloud projects get-iam-policy &lt;project&gt; &gt; p.yaml; add auditConfigs for service allServices with ADMIN_READ, DATA_READ, DATA_WRITE and no exemptedMembers; gcloud projects set-iam-policy &lt;project&gt; p.yaml</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill FAIL">FAIL</span></td>
+ <td class="sev-MEDIUM">MEDIUM</td>
+ <td><b>GCP-NET-001</b> The default VPC network does not exist<br><small class="meta">CIS GCP 3.1</small></td>
+ <td>default</td><td>global</td>
+ <td>Default network (with permissive pre-built rules) exists.<details><summary>Remediation</summary><code>Move workloads to a custom VPC, then: gcloud compute networks delete default</code></details></td>
+</tr>
+
+<tr>
+ <td><span class="pill PASS">PASS</span></td>
+ <td class="sev-CRITICAL">CRITICAL</td>
+ <td><b>GCP-GCS-001</b> Cloud Storage buckets are not anonymously or publicly accessible<br><small class="meta">CIS GCP 5.1</small></td>
+ <td>acme-audit-logs</td><td>us-central1</td>
+ <td>No allUsers/allAuthenticatedUsers bindings in effect.</td>
+</tr>
+
+<tr>
+ <td><span class="pill PASS">PASS</span></td>
+ <td class="sev-HIGH">HIGH</td>
+ <td><b>GCP-GKE-002</b> GKE legacy authorization (ABAC) is disabled<br><small class="meta">CIS GKE 5.8.3</small></td>
+ <td>prod-gke</td><td>us-central1</td>
+ <td>Legacy ABAC disabled; RBAC only.</td>
+</tr>
+
+<tr>
+ <td><span class="pill PASS">PASS</span></td>
+ <td class="sev-HIGH">HIGH</td>
+ <td><b>GCP-IAM-002</b> Service accounts do not hold admin privileges<br><small class="meta">CIS GCP 1.5</small></td>
+ <td>web@acme-synthetic-demo.iam.gserviceaccount.com</td><td>global</td>
+ <td>No admin roles at project level.</td>
+</tr>
+
+<tr>
+ <td><span class="pill PASS">PASS</span></td>
+ <td class="sev-HIGH">HIGH</td>
+ <td><b>GCP-NET-002</b> No firewall rule allows 0.0.0.0/0 to SSH (22) or RDP (3389)<br><small class="meta">CIS GCP 3.6, 3.7</small></td>
+ <td>allow-iap-admin</td><td>global</td>
+ <td>Source ranges are restricted.</td>
+</tr>
+
+<tr>
+ <td><span class="pill PASS">PASS</span></td>
+ <td class="sev-HIGH">HIGH</td>
+ <td><b>GCP-NET-002</b> No firewall rule allows 0.0.0.0/0 to SSH (22) or RDP (3389)<br><small class="meta">CIS GCP 3.6, 3.7</small></td>
+ <td>allow-https</td><td>global</td>
+ <td>Internet-facing, but not on 22/3389.</td>
+</tr>
+
+<tr>
+ <td><span class="pill PASS">PASS</span></td>
+ <td class="sev-HIGH">HIGH</td>
+ <td><b>GCP-SQL-001</b> Cloud SQL instances do not have public IP addresses<br><small class="meta">CIS GCP 6.6</small></td>
+ <td>analytics-db</td><td>us-central1</td>
+ <td>Private IP only.</td>
+</tr>
+
+<tr>
+ <td><span class="pill PASS">PASS</span></td>
+ <td class="sev-HIGH">HIGH</td>
+ <td><b>GCP-SQL-002</b> Cloud SQL instances require SSL/TLS for incoming connections<br><small class="meta">CIS GCP 6.4</small></td>
+ <td>analytics-db</td><td>us-central1</td>
+ <td>TLS required (ENCRYPTED_ONLY).</td>
+</tr>
+
+<tr>
+ <td><span class="pill PASS">PASS</span></td>
+ <td class="sev-MEDIUM">MEDIUM</td>
+ <td><b>GCP-GCS-002</b> Cloud Storage buckets have uniform bucket-level access enabled<br><small class="meta">CIS GCP 5.2</small></td>
+ <td>acme-audit-logs</td><td>us-central1</td>
+ <td>Uniform bucket-level access enabled; ACLs disabled.</td>
+</tr>
+
+<tr>
+ <td><span class="pill PASS">PASS</span></td>
+ <td class="sev-MEDIUM">MEDIUM</td>
+ <td><b>GCP-GKE-001</b> GKE clusters use private nodes<br><small class="meta">CIS GKE 5.6.5</small></td>
+ <td>prod-gke</td><td>us-central1</td>
+ <td>Nodes have internal IPs only.</td>
+</tr>
+
+<tr>
+ <td><span class="pill PASS">PASS</span></td>
+ <td class="sev-MEDIUM">MEDIUM</td>
+ <td><b>GCP-IAM-003</b> User-managed service account keys are rotated within 90 days<br><small class="meta">CIS GCP 1.7</small></td>
+ <td>web@acme-synthetic-demo.iam.gserviceaccount.com/b71e02</td><td>global</td>
+ <td>User-managed key is 12 days old.</td>
+</tr>
+
+<tr>
+ <td><span class="pill PASS">PASS</span></td>
+ <td class="sev-MEDIUM">MEDIUM</td>
+ <td><b>GCP-KMS-001</b> Cloud KMS symmetric keys rotate at least every 90 days<br><small class="meta">CIS GCP 1.10</small></td>
+ <td>projects/acme-synthetic-demo/locations/us-central1/keyRings/app/cryptoKeys/app-data</td><td>us-central1</td>
+ <td>Rotates every 90 days.</td>
+</tr>
+
+</tbody></table></div>
+</main></body></html>

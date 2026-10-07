@@ -1,0 +1,33 @@
+# Least-privilege, read-only custom role for the GCP provider.
+# Lists exactly the permissions the GoogleApiAdapter calls (scanner/gcp/client.py).
+# None of them can modify resources, read object data, or use keys to decrypt.
+#
+#   gcloud iam roles create postureScannerReadOnly --project=<project> \
+#       --file=policies/gcp-scanner-role.yaml
+#   gcloud projects add-iam-policy-binding <project> \
+#       --member=serviceAccount:<scanner-sa> \
+#       --role=projects/<project>/roles/postureScannerReadOnly
+title: Posture Scanner Read-Only
+description: Read-only permissions for cloud-posture-scanner GCP CIS checks.
+stage: GA
+includedPermissions:
+  # GCP-IAM-001, GCP-IAM-002, GCP-LOG-001 (project IAM policy incl. auditConfigs)
+  - resourcemanager.projects.getIamPolicy
+  # GCP-IAM-002, GCP-IAM-003
+  - iam.serviceAccounts.list
+  # GCP-IAM-003 (key metadata only; cannot create or download keys)
+  - iam.serviceAccountKeys.list
+  # GCP-GCS-001, GCP-GCS-002 (bucket metadata, not objects)
+  - storage.buckets.list
+  - storage.buckets.getIamPolicy
+  # GCP-NET-001, GCP-NET-002
+  - compute.networks.list
+  - compute.firewalls.list
+  # GCP-SQL-001, GCP-SQL-002
+  - cloudsql.instances.list
+  # GCP-KMS-001 (key metadata only; no cloudkms.cryptoKeyVersions.useToDecrypt)
+  - cloudkms.locations.list
+  - cloudkms.keyRings.list
+  - cloudkms.cryptoKeys.list
+  # GCP-GKE-001, GCP-GKE-002
+  - container.clusters.list

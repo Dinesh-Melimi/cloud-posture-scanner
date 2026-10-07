@@ -43,3 +43,39 @@ def run_scan(session, regions: list[str], include=None, exclude=None) -> ScanRes
                 )
     return result
 
+
+
+def select_gcp_checks(include: list[str] | None = None, exclude: list[str] | None = None):
+    from scanner.gcp import GCP_REGISTRY
+
+    ids = sorted(GCP_REGISTRY)
+    if include:
+        ids = [i for i in ids if i in include]
+    if exclude:
+        ids = [i for i in ids if i not in exclude]
+    return [GCP_REGISTRY[i] for i in ids]
+
+
+def run_gcp_scan(adapter, project: str, include=None, exclude=None) -> ScanResult:
+    """Run GCP checks against one project through a ``GcpAdapter``."""
+    from scanner.gcp import GcpApiError
+
+    result = ScanResult(
+        account_id=project,
+        regions=["global"],
+        started_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        provider="gcp",
+    )
+    locations: set[str] = set()
+    for check_cls in select_gcp_checks(include, exclude):
+        check = check_cls(adapter, project)
+        try:
+            findings = check.run()
+        except GcpApiError as exc:
+            # Same contract as AWS: a 403 or disabled API becomes a visible ERROR finding.
+            log.warning("%s failed: %s", check_cls.check_id, exc)
+            findings = [check.finding(Status.ERROR, "n/a", f"Check could not run: {exc}")]
+        result.findings.extend(findings)
+        locations.update(f.region for f in findings)
+    result.regions = sorted(locations) or ["global"]
+    return result

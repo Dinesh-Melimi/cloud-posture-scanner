@@ -1,0 +1,317 @@
+{
+  "provider": "gcp",
+  "account_id": "acme-synthetic-demo",
+  "regions": [
+    "global",
+    "us-central1",
+    "us-central1-a"
+  ],
+  "started_at": "2026-10-07T15:04:01+00:00",
+  "summary": {
+    "total": 25,
+    "passed": 11,
+    "failed": 14,
+    "errors": 0,
+    "score": 44.0,
+    "by_severity": {
+      "CRITICAL": {
+        "PASS": 1,
+        "FAIL": 1,
+        "ERROR": 0
+      },
+      "HIGH": {
+        "PASS": 6,
+        "FAIL": 7,
+        "ERROR": 0
+      },
+      "MEDIUM": {
+        "PASS": 4,
+        "FAIL": 6,
+        "ERROR": 0
+      },
+      "LOW": {
+        "PASS": 0,
+        "FAIL": 0,
+        "ERROR": 0
+      }
+    }
+  },
+  "findings": [
+    {
+      "check_id": "GCP-GCS-001",
+      "title": "Cloud Storage buckets are not anonymously or publicly accessible",
+      "cis_ref": "CIS GCP 5.1",
+      "severity": "CRITICAL",
+      "status": "FAIL",
+      "resource": "acme-public-assets",
+      "region": "us-central1",
+      "message": "Public IAM bindings: allUsers -> roles/storage.objectViewer.",
+      "remediation": "gcloud storage buckets remove-iam-policy-binding gs://<bucket> --member=allUsers --role=<role>; enforce the constraints/storage.publicAccessPrevention org policy"
+    },
+    {
+      "check_id": "GCP-GCS-001",
+      "title": "Cloud Storage buckets are not anonymously or publicly accessible",
+      "cis_ref": "CIS GCP 5.1",
+      "severity": "CRITICAL",
+      "status": "PASS",
+      "resource": "acme-audit-logs",
+      "region": "us-central1",
+      "message": "No allUsers/allAuthenticatedUsers bindings in effect.",
+      "remediation": "gcloud storage buckets remove-iam-policy-binding gs://<bucket> --member=allUsers --role=<role>; enforce the constraints/storage.publicAccessPrevention org policy"
+    },
+    {
+      "check_id": "GCP-GCS-002",
+      "title": "Cloud Storage buckets have uniform bucket-level access enabled",
+      "cis_ref": "CIS GCP 5.2",
+      "severity": "MEDIUM",
+      "status": "FAIL",
+      "resource": "acme-public-assets",
+      "region": "us-central1",
+      "message": "Fine-grained object ACLs are still active.",
+      "remediation": "gcloud storage buckets update gs://<bucket> --uniform-bucket-level-access"
+    },
+    {
+      "check_id": "GCP-GCS-002",
+      "title": "Cloud Storage buckets have uniform bucket-level access enabled",
+      "cis_ref": "CIS GCP 5.2",
+      "severity": "MEDIUM",
+      "status": "PASS",
+      "resource": "acme-audit-logs",
+      "region": "us-central1",
+      "message": "Uniform bucket-level access enabled; ACLs disabled.",
+      "remediation": "gcloud storage buckets update gs://<bucket> --uniform-bucket-level-access"
+    },
+    {
+      "check_id": "GCP-GKE-001",
+      "title": "GKE clusters use private nodes",
+      "cis_ref": "CIS GKE 5.6.5",
+      "severity": "MEDIUM",
+      "status": "PASS",
+      "resource": "prod-gke",
+      "region": "us-central1",
+      "message": "Nodes have internal IPs only.",
+      "remediation": "gcloud container clusters update <cluster> --location=<loc> --enable-private-nodes (older clusters may need re-creation with --enable-private-nodes)"
+    },
+    {
+      "check_id": "GCP-GKE-001",
+      "title": "GKE clusters use private nodes",
+      "cis_ref": "CIS GKE 5.6.5",
+      "severity": "MEDIUM",
+      "status": "FAIL",
+      "resource": "sandbox-gke",
+      "region": "us-central1-a",
+      "message": "Nodes have public IP addresses.",
+      "remediation": "gcloud container clusters update <cluster> --location=<loc> --enable-private-nodes (older clusters may need re-creation with --enable-private-nodes)"
+    },
+    {
+      "check_id": "GCP-GKE-002",
+      "title": "GKE legacy authorization (ABAC) is disabled",
+      "cis_ref": "CIS GKE 5.8.3",
+      "severity": "HIGH",
+      "status": "PASS",
+      "resource": "prod-gke",
+      "region": "us-central1",
+      "message": "Legacy ABAC disabled; RBAC only.",
+      "remediation": "gcloud container clusters update <cluster> --location=<loc> --no-enable-legacy-authorization"
+    },
+    {
+      "check_id": "GCP-GKE-002",
+      "title": "GKE legacy authorization (ABAC) is disabled",
+      "cis_ref": "CIS GKE 5.8.3",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "resource": "sandbox-gke",
+      "region": "us-central1-a",
+      "message": "Legacy ABAC enabled; RBAC can be bypassed.",
+      "remediation": "gcloud container clusters update <cluster> --location=<loc> --no-enable-legacy-authorization"
+    },
+    {
+      "check_id": "GCP-IAM-001",
+      "title": "No primitive Owner/Editor roles granted to users or service accounts at project level",
+      "cis_ref": "CIS GCP 1.5 (extended to users)",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "resource": "user:contractor@example.com",
+      "region": "global",
+      "message": "Granted primitive role roles/editor on the project.",
+      "remediation": "gcloud projects remove-iam-policy-binding <project> --member=<member> --role=roles/editor and grant a narrower predefined role instead"
+    },
+    {
+      "check_id": "GCP-IAM-001",
+      "title": "No primitive Owner/Editor roles granted to users or service accounts at project level",
+      "cis_ref": "CIS GCP 1.5 (extended to users)",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "resource": "serviceAccount:etl@acme-synthetic-demo.iam.gserviceaccount.com",
+      "region": "global",
+      "message": "Granted primitive role roles/editor on the project.",
+      "remediation": "gcloud projects remove-iam-policy-binding <project> --member=<member> --role=roles/editor and grant a narrower predefined role instead"
+    },
+    {
+      "check_id": "GCP-IAM-002",
+      "title": "Service accounts do not hold admin privileges",
+      "cis_ref": "CIS GCP 1.5",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "resource": "etl@acme-synthetic-demo.iam.gserviceaccount.com",
+      "region": "global",
+      "message": "Holds admin role(s): roles/editor.",
+      "remediation": "gcloud projects remove-iam-policy-binding <project> --member=serviceAccount:<email> --role=<admin role>"
+    },
+    {
+      "check_id": "GCP-IAM-002",
+      "title": "Service accounts do not hold admin privileges",
+      "cis_ref": "CIS GCP 1.5",
+      "severity": "HIGH",
+      "status": "PASS",
+      "resource": "web@acme-synthetic-demo.iam.gserviceaccount.com",
+      "region": "global",
+      "message": "No admin roles at project level.",
+      "remediation": "gcloud projects remove-iam-policy-binding <project> --member=serviceAccount:<email> --role=<admin role>"
+    },
+    {
+      "check_id": "GCP-IAM-003",
+      "title": "User-managed service account keys are rotated within 90 days",
+      "cis_ref": "CIS GCP 1.7",
+      "severity": "MEDIUM",
+      "status": "FAIL",
+      "resource": "etl@acme-synthetic-demo.iam.gserviceaccount.com/3f9a1c",
+      "region": "global",
+      "message": "User-managed key is 214 days old.",
+      "remediation": "gcloud iam service-accounts keys create new.json --iam-account=<email>; switch callers; gcloud iam service-accounts keys delete <key-id> --iam-account=<email>. Prefer Workload Identity / impersonation over keys."
+    },
+    {
+      "check_id": "GCP-IAM-003",
+      "title": "User-managed service account keys are rotated within 90 days",
+      "cis_ref": "CIS GCP 1.7",
+      "severity": "MEDIUM",
+      "status": "PASS",
+      "resource": "web@acme-synthetic-demo.iam.gserviceaccount.com/b71e02",
+      "region": "global",
+      "message": "User-managed key is 12 days old.",
+      "remediation": "gcloud iam service-accounts keys create new.json --iam-account=<email>; switch callers; gcloud iam service-accounts keys delete <key-id> --iam-account=<email>. Prefer Workload Identity / impersonation over keys."
+    },
+    {
+      "check_id": "GCP-KMS-001",
+      "title": "Cloud KMS symmetric keys rotate at least every 90 days",
+      "cis_ref": "CIS GCP 1.10",
+      "severity": "MEDIUM",
+      "status": "PASS",
+      "resource": "projects/acme-synthetic-demo/locations/us-central1/keyRings/app/cryptoKeys/app-data",
+      "region": "us-central1",
+      "message": "Rotates every 90 days.",
+      "remediation": "gcloud kms keys update <key> --keyring=<ring> --location=<loc> --rotation-period=90d --next-rotation-time=<RFC3339>"
+    },
+    {
+      "check_id": "GCP-KMS-001",
+      "title": "Cloud KMS symmetric keys rotate at least every 90 days",
+      "cis_ref": "CIS GCP 1.10",
+      "severity": "MEDIUM",
+      "status": "FAIL",
+      "resource": "projects/acme-synthetic-demo/locations/us-central1/keyRings/app/cryptoKeys/legacy-key",
+      "region": "us-central1",
+      "message": "No automatic rotation schedule.",
+      "remediation": "gcloud kms keys update <key> --keyring=<ring> --location=<loc> --rotation-period=90d --next-rotation-time=<RFC3339>"
+    },
+    {
+      "check_id": "GCP-LOG-001",
+      "title": "Cloud Audit Logs Data Access logging enabled for all services",
+      "cis_ref": "CIS GCP 2.1",
+      "severity": "MEDIUM",
+      "status": "FAIL",
+      "resource": "acme-synthetic-demo",
+      "region": "global",
+      "message": "allServices audit config missing ['DATA_READ', 'DATA_WRITE'].",
+      "remediation": "gcloud projects get-iam-policy <project> > p.yaml; add auditConfigs for service allServices with ADMIN_READ, DATA_READ, DATA_WRITE and no exemptedMembers; gcloud projects set-iam-policy <project> p.yaml"
+    },
+    {
+      "check_id": "GCP-NET-001",
+      "title": "The default VPC network does not exist",
+      "cis_ref": "CIS GCP 3.1",
+      "severity": "MEDIUM",
+      "status": "FAIL",
+      "resource": "default",
+      "region": "global",
+      "message": "Default network (with permissive pre-built rules) exists.",
+      "remediation": "Move workloads to a custom VPC, then: gcloud compute networks delete default"
+    },
+    {
+      "check_id": "GCP-NET-002",
+      "title": "No firewall rule allows 0.0.0.0/0 to SSH (22) or RDP (3389)",
+      "cis_ref": "CIS GCP 3.6, 3.7",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "resource": "default-allow-ssh",
+      "region": "global",
+      "message": "Open to the internet on SSH/22.",
+      "remediation": "gcloud compute firewall-rules update <rule> --source-ranges=<trusted CIDR> (or delete it and use IAP TCP forwarding: 35.235.240.0/20)"
+    },
+    {
+      "check_id": "GCP-NET-002",
+      "title": "No firewall rule allows 0.0.0.0/0 to SSH (22) or RDP (3389)",
+      "cis_ref": "CIS GCP 3.6, 3.7",
+      "severity": "HIGH",
+      "status": "PASS",
+      "resource": "allow-iap-admin",
+      "region": "global",
+      "message": "Source ranges are restricted.",
+      "remediation": "gcloud compute firewall-rules update <rule> --source-ranges=<trusted CIDR> (or delete it and use IAP TCP forwarding: 35.235.240.0/20)"
+    },
+    {
+      "check_id": "GCP-NET-002",
+      "title": "No firewall rule allows 0.0.0.0/0 to SSH (22) or RDP (3389)",
+      "cis_ref": "CIS GCP 3.6, 3.7",
+      "severity": "HIGH",
+      "status": "PASS",
+      "resource": "allow-https",
+      "region": "global",
+      "message": "Internet-facing, but not on 22/3389.",
+      "remediation": "gcloud compute firewall-rules update <rule> --source-ranges=<trusted CIDR> (or delete it and use IAP TCP forwarding: 35.235.240.0/20)"
+    },
+    {
+      "check_id": "GCP-SQL-001",
+      "title": "Cloud SQL instances do not have public IP addresses",
+      "cis_ref": "CIS GCP 6.6",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "resource": "orders-db",
+      "region": "us-central1",
+      "message": "Instance has a public IPv4 address. Authorized networks include 0.0.0.0/0.",
+      "remediation": "Configure private IP (Private Services Access), then: gcloud sql instances patch <instance> --no-assign-ip"
+    },
+    {
+      "check_id": "GCP-SQL-001",
+      "title": "Cloud SQL instances do not have public IP addresses",
+      "cis_ref": "CIS GCP 6.6",
+      "severity": "HIGH",
+      "status": "PASS",
+      "resource": "analytics-db",
+      "region": "us-central1",
+      "message": "Private IP only.",
+      "remediation": "Configure private IP (Private Services Access), then: gcloud sql instances patch <instance> --no-assign-ip"
+    },
+    {
+      "check_id": "GCP-SQL-002",
+      "title": "Cloud SQL instances require SSL/TLS for incoming connections",
+      "cis_ref": "CIS GCP 6.4",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "resource": "orders-db",
+      "region": "us-central1",
+      "message": "Unencrypted connections allowed (ALLOW_UNENCRYPTED_AND_ENCRYPTED).",
+      "remediation": "gcloud sql instances patch <instance> --ssl-mode=ENCRYPTED_ONLY"
+    },
+    {
+      "check_id": "GCP-SQL-002",
+      "title": "Cloud SQL instances require SSL/TLS for incoming connections",
+      "cis_ref": "CIS GCP 6.4",
+      "severity": "HIGH",
+      "status": "PASS",
+      "resource": "analytics-db",
+      "region": "us-central1",
+      "message": "TLS required (ENCRYPTED_ONLY).",
+      "remediation": "gcloud sql instances patch <instance> --ssl-mode=ENCRYPTED_ONLY"
+    }
+  ],
+  "note": "SYNTHETIC SAMPLE: generated from an in-memory fake adapter (examples/generate_sample_gcp.py). No real GCP project was scanned."
+}

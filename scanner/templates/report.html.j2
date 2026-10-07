@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AWS Posture Report - {{ r.account_id }}</title>
+<title>{{ labels[0] }} Posture Report - {{ r.account_id }}</title>
 <style>
 :root{--bg:#f7f7f5;--fg:#1d1d1b;--muted:#6b6b66;--card:#fff;--line:#e3e2dd;
 --crit:#9b1c1c;--high:#c2410c;--med:#a16207;--low:#4b5563;--pass:#15803d;--fail:#b91c1c}
@@ -25,8 +25,9 @@ details{margin-top:4px}summary{cursor:pointer;color:var(--muted)}code{font-size:
 </style>
 </head>
 <body><main>
-<h1>AWS Cloud Posture Report</h1>
-<div class="meta">Account {{ r.account_id }} &middot; Regions {{ r.regions|join(", ") }} &middot; {{ r.started_at }}</div>
+<h1>{{ labels[0] }} Cloud Posture Report</h1>
+{% if r.note %}<div class="card" style="margin:12px 0;border-color:var(--med)"><b style="font-size:14px">{{ r.note }}</b></div>{% endif %}
+<div class="meta">{{ labels[1] }} {{ r.account_id }} &middot; {{ labels[2] }} {{ r.regions|join(", ") }} &middot; {{ r.started_at }}</div>
 <div class="grid">
   <div class="card"><span>Score</span><b>{{ s.score }}%</b></div>
   <div class="card"><span>Failed</span><b class="FAIL">{{ s.failed }}</b></div>

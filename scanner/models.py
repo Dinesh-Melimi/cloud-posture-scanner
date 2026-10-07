@@ -46,6 +46,8 @@ class ScanResult:
     regions: list[str]
     started_at: str
     findings: list[Finding] = field(default_factory=list)
+    provider: str = "aws"  # "aws" or "gcp"; account_id holds the GCP project ID for gcp
+    note: str = ""  # free-text banner, e.g. marking a synthetic sample report
 
     def summary(self) -> dict:
         counts = {s.value: {st.value: 0 for st in Status} for s in Severity}
@@ -63,10 +65,14 @@ class ScanResult:
         }
 
     def to_dict(self) -> dict:
-        return {
+        d = {
+            "provider": self.provider,
             "account_id": self.account_id,
             "regions": self.regions,
             "started_at": self.started_at,
             "summary": self.summary(),
             "findings": [f.to_dict() for f in self.findings],
         }
+        if self.note:
+            d["note"] = self.note
+        return d

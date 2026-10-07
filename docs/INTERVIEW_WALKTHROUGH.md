@@ -147,3 +147,86 @@ bandit in CI, and a minimal GitHub Actions token.
 **How would you add auto-remediation safely?**
 As a separate tool and role, with dry-run by default, explicit per-check opt-in,
 and change logging, so the scanner's read-only role stays read-only.
+
+## GCP provider
+
+### What it adds, in plain English
+The same scanner can now point at a Google Cloud project with
+`--provider gcp --project <id>`. It runs 13 checks mapped to the CIS Google Cloud
+Platform Foundation Benchmark (plus two from the CIS GKE Benchmark) and writes the
+same JSON / Markdown / HTML reports.
+
+- **`scanner/gcp/client.py`**: the only file that knows how to talk to Google. It
+  defines a `GcpAdapter` interface with ten read-only methods ("give me the project
+  IAM policy", "list buckets", "list firewall rules", ...). The real implementation
+  uses Google's discovery-based API client with Application Default Credentials.
+  Any API failure becomes a `GcpApiError`.
+- **`scanner/gcp/fake.py`**: a fake adapter that just returns dicts from memory.
+  Tests build a "good" and "bad" project with it, so nothing calls Google and no
+  credentials exist in CI. This is the GCP equivalent of moto, written by hand.
+- **`scanner/gcp/checks.py`**: the controls. They only ever call the adapter, so
+  they don't care whether the data is real or fake.
+  - IAM: no Owner/Editor for users or service accounts; service accounts with
+    no admin roles; user-managed SA keys younger than 90 days (clock is injectable).
+  - Logging: Data Access audit logs turned on for `allServices` with no exempted users.
+  - Network: no `default` VPC; no firewall rule opening 22 or 3389 to the internet
+    (port ranges like `3000-4000` and protocol `all` are handled).
+  - Storage: no `allUsers` / `allAuthenticatedUsers` on buckets; uniform
+    bucket-level access on.
+  - Cloud SQL: no public IP; TLS required.
+  - KMS: symmetric keys rotate at least every 90 days.
+  - GKE: private nodes; legacy ABAC off.
+- **`policies/gcp-scanner-role.yaml`**: a custom IAM role with exactly the 12
+  permissions the adapter uses. Nothing that reads object data, creates keys, or
+  decrypts.
+- **`examples/sample-report-gcp/`**: a report from the fake adapter, clearly
+  marked SYNTHETIC. I have not run this against a live GCP project and say so in
+  the README.
+
+### Likely GCP interview questions
+
+**How is GCP IAM different from AWS IAM?**
+In GCP you attach *bindings* (member + role) to a resource's IAM policy, and
+policies inherit downward: organization, folder, project, resource. A role granted
+at the org level applies to every project below it. AWS centers on identity-based
+policy documents attached to users/roles plus resource policies. Roles in GCP are
+basic (Owner/Editor/Viewer, too broad), predefined (per service), or custom. That's
+why the scanner flags basic roles: Editor alone can change almost every resource.
+A limitation I call out: the scanner only reads the project's own policy, so a
+grant inherited from a folder wouldn't show up.
+
+**Why are user-managed service account keys a risk, and what replaces them?**
+A key is a long-lived JSON private key that works from anywhere until it's deleted,
+and it tends to end up in repos, laptops, and CI variables. Google-managed keys are
+rotated automatically and never leave Google. Better options are attaching the SA
+to the workload, Workload Identity (GKE) or Workload Identity Federation (GitHub
+Actions, AWS, Azure) to swap an external token for short-lived credentials, or
+impersonation. The org policy `iam.disableServiceAccountKeyCreation` stops new
+keys. The check flags anything older than 90 days, per CIS 1.7.
+
+**What does uniform bucket-level access do?**
+It turns off object ACLs so access to a bucket is controlled only by IAM. With
+ACLs, an individual object can be public even if the bucket IAM looks clean, which
+makes auditing hard. Uniform access gives one place to look, and it's also a
+prerequisite for IAM Conditions on buckets. Pair it with Public Access Prevention
+(`enforced`), which blocks `allUsers` grants outright. The public-bucket check
+respects that: an `allUsers` binding on a bucket with PAP enforced isn't effective,
+so it passes.
+
+**What are VPC Service Controls and how do they relate to IAM?**
+IAM answers "who can call this API". VPC Service Controls draw a *perimeter*
+around projects and services (like Cloud Storage or BigQuery) and answer "from
+where, and to where, can data move". Even a valid stolen credential can't copy data
+from a bucket inside the perimeter to a bucket outside it, or call the API from the
+internet unless an access level allows it. It's mainly a data-exfiltration control.
+You usually start in dry-run mode to see what would be blocked. This scanner doesn't
+check VPC-SC; I'd add it via the Access Context Manager API.
+
+**How did you test GCP checks without a GCP account, and what's the risk?**
+Checks depend on an adapter interface, not the Google client directly. Tests use an
+in-memory fake that returns REST-shaped dicts, with one compliant and one
+non-compliant case per check plus edge cases (port ranges, disabled rules, IPv6,
+destroyed KMS keys). The risk is that my fake data might not match the real API
+shape exactly; I matched field names to the public REST docs, but the next step
+would be a smoke run against a throwaway project with the custom role, and
+recording real responses as fixtures.

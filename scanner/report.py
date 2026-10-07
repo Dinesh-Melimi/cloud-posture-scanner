@@ -23,13 +23,22 @@ def to_json(result: ScanResult) -> str:
     return json.dumps(result.to_dict(), indent=2)
 
 
+PROVIDER_LABELS = {"aws": ("AWS", "Account", "Regions"), "gcp": ("GCP", "Project", "Locations")}
+
+
+def labels(result: ScanResult) -> tuple[str, str, str]:
+    return PROVIDER_LABELS.get(result.provider, PROVIDER_LABELS["aws"])
+
+
 def to_markdown(result: ScanResult) -> str:
     s = result.summary()
-    lines = [
-        "# AWS Cloud Posture Report",
-        "",
-        f"- **Account:** {result.account_id}",
-        f"- **Regions:** {', '.join(result.regions)}",
+    name, acct, regions = labels(result)
+    lines = [f"# {name} Cloud Posture Report", ""]
+    if result.note:
+        lines += [f"> **{result.note}**", ""]
+    lines += [
+        f"- **{acct}:** {result.account_id}",
+        f"- **{regions}:** {', '.join(result.regions)}",
         f"- **Scanned at:** {result.started_at}",
         (f"- **Score:** {s['score']}% ({s['passed']}/{s['total']} passed, "
          f"{s['failed']} failed, {s['errors']} errors)"),
@@ -66,7 +75,7 @@ def to_html(result: ScanResult) -> str:
         autoescape=True,  # always escape: resource names are untrusted input
     )
     return env.get_template("report.html.j2").render(
-        r=result, s=result.summary(), findings=_sorted(result)
+        r=result, s=result.summary(), findings=_sorted(result), labels=labels(result)
     )
 
 

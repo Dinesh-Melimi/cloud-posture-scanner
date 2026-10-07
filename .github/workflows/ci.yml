@@ -26,5 +26,7 @@ jobs:
         run: ruff check .
       - name: Security scan (bandit)
         run: bandit -q -r scanner
-      - name: Tests (pytest + moto)
+      - name: Tests (pytest + moto for AWS, in-memory fake adapter for GCP)
         run: python -m pytest -q
+      - name: GCP sample report builds without credentials
+        run: PYTHONPATH=. python examples/generate_sample_gcp.py
