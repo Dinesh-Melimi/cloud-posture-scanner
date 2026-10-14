@@ -1,0 +1,43 @@
+# Scheduled cloud posture scan. AWS access uses GitLab OIDC (no long-lived keys):
+# create an IAM role that trusts gitlab.com for this project, attach
+# policies/scanner-readonly-policy.json, and set SCANNER_ROLE_ARN as a CI/CD variable.
+stages: [test, scan]
+
+variables:
+  REGIONS: "us-east-1,us-west-2"
+  FAIL_ON: "HIGH"
+
+unit-tests:
+  stage: test
+  image: python:3.12-slim
+  script:
+    - pip install -r requirements-dev.txt
+    - ruff check .
+    - bandit -q -r scanner
+    - python -m pytest -q
+  rules:
+    - if: $CI_PIPELINE_SOURCE != "schedule"
+
+posture-scan:
+  stage: scan
+  image: python:3.12-slim
+  id_tokens:
+    AWS_OIDC_TOKEN:
+      aud: sts.amazonaws.com
+  before_script:
+    - pip install -r requirements.txt awscli
+    - >
+      export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s"
+      $(aws sts assume-role-with-web-identity --role-arn "$SCANNER_ROLE_ARN"
+      --role-session-name "gitlab-$CI_PIPELINE_ID" --web-identity-token "$AWS_OIDC_TOKEN"
+      --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" --output text))
+  script:
+    - python -m scanner --regions "$REGIONS" --format json,html,sarif,junit --output reports --fail-on "$FAIL_ON"
+  artifacts:
+    when: always
+    paths: [reports/]
+    reports:
+      junit: reports/posture-report.xml
+    expire_in: 30 days
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"

@@ -32,6 +32,18 @@ CIS section numbers shift between benchmark versions; references here follow v1.
 numbering and should be verified against the version your organization uses. Severities
 are this project's own judgment, not CIS-assigned.
 
+## CI/CD integration (Jenkins, GitLab, GitHub)
+
+`--format sarif,junit` adds two pipeline-native outputs:
+
+- **SARIF 2.1.0** (`posture-report.sarif`): failed controls show up in GitHub code scanning, GitLab, Azure DevOps, or Jenkins Warnings NG, with CIS references, severity scores, and stable fingerprints so the same finding is not re-raised every build
+- **JUnit XML** (`posture-report.xml`): every check on every resource is a test case, so Jenkins and GitLab show failed controls in their test report views and trend them across builds
+
+Ready-to-use pipelines:
+
+- [`Jenkinsfile`](Jenkinsfile): nightly scan in a Python container, AWS credentials from the Jenkins credential store, JUnit and SARIF published, reports archived, build fails at a chosen severity
+- [`.gitlab-ci.yml`](.gitlab-ci.yml): unit tests on every push; scheduled scan that authenticates to AWS with GitLab OIDC (no long-lived keys) and publishes the JUnit report
+
 ## Architecture
 
 ```mermaid

@@ -26,7 +26,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--project", help="GCP project ID (required with --provider gcp)")
     p.add_argument("--checks", help="Comma-separated check IDs to run (default: all)")
     p.add_argument("--exclude", help="Comma-separated check IDs to skip")
-    p.add_argument("--format", default="json,md,html", help="Any of json,md,html")
+    p.add_argument("--format", default="json,md,html", help="Any of json,md,html,sarif,junit")
     p.add_argument("--output", default="reports", help="Output directory")
     p.add_argument("--fail-on", choices=[s.value for s in Severity],
                    help="Exit 2 if any FAIL at or above this severity (for CI gating)")
