@@ -32,6 +32,16 @@ CIS section numbers shift between benchmark versions; references here follow v1.
 numbering and should be verified against the version your organization uses. Severities
 are this project's own judgment, not CIS-assigned.
 
+## SIEM telemetry pipeline checks
+
+Enabling CloudTrail, GuardDuty and Security Hub is only half the job: the SOC sees only what reaches the SIEM. Three checks confirm each signal has a delivery path:
+
+| Check | What it verifies |
+|---|---|
+| SIEM-001 | Security Hub is enabled in each scanned region to aggregate findings |
+| SIEM-002 | An enabled EventBridge rule **with a target** (Firehose, SQS, Lambda) forwards GuardDuty and Security Hub findings; rules with no target or disabled rules do not count |
+| SIEM-003 | Each CloudTrail trail delivers to CloudWatch Logs, or its S3 bucket sends event notifications to SQS/SNS (how Splunk, Sentinel and most SIEM S3 connectors pull CloudTrail) |
+
 ## CI/CD integration (Jenkins, GitLab, GitHub)
 
 `--format sarif,junit` adds two pipeline-native outputs:

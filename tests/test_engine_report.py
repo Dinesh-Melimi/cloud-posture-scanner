@@ -11,7 +11,7 @@ from scanner.report import to_html, to_markdown, write_reports
 
 
 def test_registry_has_twelve_checks_with_metadata():
-    assert len(REGISTRY) == 12
+    assert len(REGISTRY) == 15
     for cid, cls in REGISTRY.items():
         assert cls.check_id == cid
         assert cls.cis_ref and cls.title and cls.remediation
