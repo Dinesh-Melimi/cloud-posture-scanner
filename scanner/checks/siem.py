@@ -81,7 +81,8 @@ class CloudTrailSiemDelivery(BaseCheck):
     cis_ref = "CIS 3.4 (CloudWatch Logs integration), NIST CSF DE.AE-3"
     severity = Severity.HIGH
     remediation = (
-        "Send the trail to CloudWatch Logs (aws cloudtrail update-trail --cloud-watch-logs-log-group-arn ...), "
+        "Send the trail to CloudWatch Logs (aws cloudtrail update-trail "
+        "--cloud-watch-logs-log-group-arn ...), "
         "or add an S3 event notification on the trail bucket to an SQS queue the SIEM connector reads."
     )
 
