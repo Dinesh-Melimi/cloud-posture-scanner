@@ -10,3 +10,11 @@ dist/
 reports/
 .env
 .aws/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform/**/build/
+# Lambda packaging copy (see terraform/breach-response/README.md)
+terraform/breach-response/lambda/breachlab/

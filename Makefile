@@ -1,4 +1,4 @@
-.PHONY: install lint security test check sample scan scan-gcp clean
+.PHONY: install lint security test check sample scan scan-gcp breach breach-baseline clean
 
 install:
 	pip install -r requirements-dev.txt
@@ -7,7 +7,7 @@ lint:
 	ruff check .
 
 security:
-	bandit -q -r scanner
+	bandit -q -r scanner breachlab
 
 test:
 	python -m pytest -q
@@ -23,6 +23,12 @@ scan-gcp:
 
 scan:
 	python -m scanner --regions us-east-1 --output reports
+
+breach:
+	python -m breachlab run --report reports/incident-report.md
+
+breach-baseline:
+	python -m breachlab baseline
 
 clean:
 	rm -rf reports .pytest_cache .ruff_cache **/__pycache__
