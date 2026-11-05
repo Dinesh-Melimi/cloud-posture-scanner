@@ -104,6 +104,78 @@ Output lands in `reports/posture-report.{json,md,html}`.
 A sample run against a **moto-mocked** account (no real AWS involved) is in
 [`examples/sample-report/`](examples/sample-report/); regenerate it with `make sample`.
 
+## Breach detection-and-response lab
+
+Posture scanning tells you where an account is weak. This lab shows what happens
+when one of those weaknesses is used, and how the account defends itself.
+
+**Demo:** [`docs/demo/cloud-breach-lab-demo.mp4`](docs/demo/cloud-breach-lab-demo.mp4)
+— a 25-second run from attack telemetry through automated containment. A sample
+incident report is in [`docs/demo/sample-incident-report.md`](docs/demo/sample-incident-report.md),
+and the walkthrough I use to explain it is in [`docs/BREACH_LAB.md`](docs/BREACH_LAB.md).
+
+![Architecture](docs/demo/architecture.png)
+
+`breachlab` replays a full cloud intrusion as telemetry, runs detection-as-code
+over it, and triggers automated containment against a simulated AWS account.
+There is no exploit code in the project: each attack step is represented by the
+log records it leaves behind (CloudTrail, GuardDuty, VPC flow logs), the same
+way detection datasets like Splunk Attack Range work. The work is all on the
+defensive side.
+
+### The attack it replays
+
+A single exposed web app turns into a full account takeover, the most common
+path in real AWS incidents:
+
+| # | Stage | ATT&CK | Detection |
+|---|---|---|---|
+| 1 | Web app recon | T1595 | (context) |
+| 2 | SSRF reads instance metadata, steals the role credentials | T1552.005 | DET-001 |
+| 3 | Stolen role used from an outside IP | T1078.004 | DET-002 |
+| 4 | Permission enumeration | T1087 | DET-003 |
+| 5 | Privilege escalation via `PutUserPolicy` allow-* | T1098 | DET-004 |
+| 6 | Lateral movement into an S3 bucket | T1530 | (DET-005 next) |
+| 7 | Bulk download — data exfiltration | T1537 | DET-005, DET-006 |
+
+### What fires back
+
+When the detections fire, the responder runs real `boto3` containment against a
+`moto`-simulated account — the same functions a deployed Lambda would run live:
+
+- snapshot the instance's volumes for forensics,
+- deactivate the compromised access keys,
+- attach a deny-all policy to quarantine the principal (kept, not deleted, so
+  the evidence survives),
+- move the instance into a no-egress security group to cut the exfil channel.
+
+It then writes a Markdown incident report: executive summary, ATT&CK timeline,
+what each detection caught, and every containment action with a timestamp.
+
+### Run it
+
+```bash
+make breach            # full detect -> contain -> report
+make breach-baseline   # prove a normal day fires nothing (false-positive test)
+
+python -m breachlab replay    # just the attack timeline
+python -m breachlab detect    # just what the rules catch
+python -m breachlab run       # narrated end-to-end run (what the demo records)
+```
+
+The `baseline` command is the honesty check: an ordinary day (instance role
+working from inside the VPC, an admin making a scoped policy change, a normal
+download) must produce zero detections, or a rule is too noisy to trust.
+
+### Deploying the defensive side for real
+
+`terraform/breach-response/` stands up the live version: GuardDuty, a
+least-privilege responder Lambda, and an EventBridge rule that routes findings
+to it. The Lambda imports `breachlab.respond`, so the lab and the deployed
+responder share one code path. See that folder's README; the config is
+hand-reviewed but has not been run through `terraform validate` in this repo, so
+`plan` it in your own sandbox first.
+
 ## GCP provider
 
 `--provider gcp --project <id>` runs 13 checks against one GCP project.
