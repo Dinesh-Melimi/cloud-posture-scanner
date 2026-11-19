@@ -4,7 +4,7 @@
 
 - **Project:** acme-synthetic-demo
 - **Locations:** global, us-central1, us-central1-a
-- **Scanned at:** 2026-10-07T15:04:01+00:00
+- **Scanned at:** 2026-11-19T17:01:06+00:00
 - **Score:** 44.0% (11/25 passed, 14 failed, 0 errors)
 
 ## Severity summary

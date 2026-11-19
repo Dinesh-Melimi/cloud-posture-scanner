@@ -1,8 +1,12 @@
 """CLI: python -m osbaseline --linux samples/linux-web01 --windows samples/win-app01.json"""
-import argparse, json, sys
+
+import argparse
+import json
+import sys
 from pathlib import Path
+
 from .collect import load_linux, load_windows
-from .evaluate import evaluate, compliance, drift, to_json
+from .evaluate import compliance, drift, evaluate, to_json
 
 HERE = Path(__file__).parent
 
@@ -14,7 +18,9 @@ def main():
     ap.add_argument("--exceptions", default=str(HERE / "samples" / "exceptions.json"))
     ap.add_argument("--previous", help="previous results JSON to detect drift")
     ap.add_argument("--out", default="baseline_results.json")
-    ap.add_argument("--fail-under", type=float, default=0, help="exit 1 if any host is below this compliance %%")
+    ap.add_argument(
+        "--fail-under", type=float, default=0, help="exit 1 if any host is below this compliance %%"
+    )
     a = ap.parse_args()
     exc = json.loads(Path(a.exceptions).read_text()) if Path(a.exceptions).exists() else []
     lin = json.loads((HERE / "baselines" / "linux_cis_l1.json").read_text())
@@ -26,11 +32,15 @@ def main():
         allres += [(Path(p).stem, evaluate(Path(p).stem, win, load_windows(p), exc))]
     flat = []
     for host, res in allres:
-        pct = compliance(res); worst = min(worst, pct)
+        pct = compliance(res)
+        worst = min(worst, pct)
         print(f"\n== {host}: {pct}% compliant")
         for r in res:
             if r.status != "PASS":
-                print(f"  [{r.status:17}] {r.id:11} {r.title:40} expected {r.expected!r} got {r.actual!r}  (CIS {r.cis}, NIST {r.nist}) {r.note}")
+                print(
+                    f"  [{r.status:17}] {r.id:11} {r.title:40} "
+                    f"expected {r.expected!r} got {r.actual!r}  (CIS {r.cis}, NIST {r.nist}) {r.note}"
+                )
         flat += res
     if a.previous and Path(a.previous).exists():
         d = drift(json.loads(Path(a.previous).read_text()), flat)

@@ -1,6 +1,6 @@
 """Evaluate a host snapshot against a baseline; apply time-bound exceptions; compute compliance and drift."""
-import json
-from dataclasses import dataclass, asdict
+
+from dataclasses import asdict, dataclass
 from datetime import date
 
 
@@ -12,7 +12,7 @@ class Result:
     severity: str
     expected: str
     actual: str
-    status: str          # PASS | FAIL | EXCEPTION | EXPIRED_EXCEPTION
+    status: str  # PASS | FAIL | EXCEPTION | EXPIRED_EXCEPTION
     cis: str
     nist: str
     note: str = ""
@@ -55,10 +55,29 @@ def evaluate(host, baseline, view, exceptions=(), today=None):
         e = exc.get((host, ctl["id"])) or exc.get(("*", ctl["id"]))
         if not ok and e:
             if date.fromisoformat(e["expires"]) >= today:
-                status, note = "EXCEPTION", f"{e['reason']} | compensating: {e['compensating']} | owner {e['owner']} | expires {e['expires']}"
+                status, note = (
+                    "EXCEPTION",
+                    (
+                        f"{e['reason']} | compensating: {e['compensating']}"
+                        f" | owner {e['owner']} | expires {e['expires']}"
+                    ),
+                )
             else:
                 status, note = "EXPIRED_EXCEPTION", f"exception expired {e['expires']}"
-        out.append(Result(host, ctl["id"], ctl["title"], ctl["severity"], str(_expected(ctl)), str(actual), status, ctl["cis"], ctl["nist"], note))
+        out.append(
+            Result(
+                host,
+                ctl["id"],
+                ctl["title"],
+                ctl["severity"],
+                str(_expected(ctl)),
+                str(actual),
+                status,
+                ctl["cis"],
+                ctl["nist"],
+                note,
+            )
+        )
     return out
 
 
@@ -71,7 +90,11 @@ def compliance(results):
 def drift(previous, current):
     """Controls that were passing before and are failing now: configuration drift."""
     prev = {(r["host"], r["id"]): r["status"] for r in previous}
-    return [r for r in current if prev.get((r.host, r.id)) == "PASS" and r.status in ("FAIL", "EXPIRED_EXCEPTION")]
+    return [
+        r
+        for r in current
+        if prev.get((r.host, r.id)) == "PASS" and r.status in ("FAIL", "EXPIRED_EXCEPTION")
+    ]
 
 
 def to_json(results):

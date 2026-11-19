@@ -1,5 +1,6 @@
 """Parse host configuration snapshots into a flat {source: {key: value}} view."""
-import json, re
+
+import json
 from pathlib import Path
 
 
