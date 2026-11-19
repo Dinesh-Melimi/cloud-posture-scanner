@@ -1,0 +1,12 @@
+{"name":"Linux Server Baseline (CIS L1 subset)","version":"1.0","platform":"linux","controls":[
+ {"id":"LNX-SSH-01","title":"SSH root login disabled","source":"sshd_config","key":"PermitRootLogin","expect":"no","cis":"5.2.10","nist":"AC-6","severity":"HIGH"},
+ {"id":"LNX-SSH-02","title":"SSH password authentication disabled","source":"sshd_config","key":"PasswordAuthentication","expect":"no","cis":"5.2.11","nist":"IA-2","severity":"HIGH"},
+ {"id":"LNX-SSH-03","title":"SSH MaxAuthTries <= 4","source":"sshd_config","key":"MaxAuthTries","max":4,"cis":"5.2.7","nist":"AC-7","severity":"MEDIUM"},
+ {"id":"LNX-SSH-04","title":"SSH X11 forwarding disabled","source":"sshd_config","key":"X11Forwarding","expect":"no","cis":"5.2.6","nist":"CM-7","severity":"LOW"},
+ {"id":"LNX-NET-01","title":"IP forwarding disabled","source":"sysctl","key":"net.ipv4.ip_forward","expect":"0","cis":"3.1.1","nist":"CM-7","severity":"MEDIUM"},
+ {"id":"LNX-NET-02","title":"ICMP redirects not accepted","source":"sysctl","key":"net.ipv4.conf.all.accept_redirects","expect":"0","cis":"3.2.2","nist":"SC-7","severity":"MEDIUM"},
+ {"id":"LNX-KRN-01","title":"ASLR enabled","source":"sysctl","key":"kernel.randomize_va_space","expect":"2","cis":"1.5.3","nist":"SI-16","severity":"MEDIUM"},
+ {"id":"LNX-SVC-01","title":"telnet server not running","source":"services","key":"telnet","expect":"absent","cis":"2.2.x","nist":"CM-7","severity":"HIGH"},
+ {"id":"LNX-SVC-02","title":"auditd enabled","source":"services","key":"auditd","expect":"present","cis":"4.1.1","nist":"AU-2","severity":"HIGH"},
+ {"id":"LNX-MAC-01","title":"SELinux enforcing","source":"selinux","key":"mode","expect":"enforcing","cis":"1.6.1","nist":"AC-3","severity":"MEDIUM"},
+ {"id":"LNX-PWD-01","title":"Password minimum length >= 14","source":"pwquality","key":"minlen","min":14,"cis":"5.4.1","nist":"IA-5","severity":"MEDIUM"}]}

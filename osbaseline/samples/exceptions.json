@@ -1,0 +1,1 @@
+[{"host":"win-app01","control":"WIN-SMB-01","reason":"Legacy scanner app requires SMBv1 until vendor upgrade","compensating":"Host isolated to scanner VLAN; SMB traffic alerting in SIEM","owner":"app-team-imaging","expires":"2027-03-31","approved_by":"CISO delegate"}]

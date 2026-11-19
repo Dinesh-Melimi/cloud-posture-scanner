@@ -32,6 +32,32 @@ CIS section numbers shift between benchmark versions; references here follow v1.
 numbering and should be verified against the version your organization uses. Severities
 are this project's own judgment, not CIS-assigned.
 
+## OS baseline compliance (Windows + Linux)
+
+`osbaseline/` checks servers against a CIS Level 1 style **security baseline**, tracks
+**time-bound exceptions**, and reports **configuration drift** between scans.
+
+| Piece | What it does |
+|---|---|
+| `baselines/linux_cis_l1.json` | 11 controls: SSH hardening, kernel network settings, ASLR, telnet removed, auditd, SELinux, password length |
+| `baselines/windows_cis_l1.json` | 10 controls: SMBv1, LLMNR, lockout, password length, LAPS, audit policy, UAC, BitLocker, Defender |
+| `samples/exceptions.json` | Exception register: reason, compensating controls, owner, approver, expiry. Expired exceptions count as failures |
+| `tools/export_windows_settings.ps1` | Collects the Windows settings as JSON from a host |
+| `tools/remediate_linux.yml` | Ansible playbook that enforces the Linux baseline, so drift is fixed by the same code that set it |
+
+Every control maps to a CIS section and a NIST 800-53 control (CM-2/CM-6/CM-7, AC, AU, IA, SC).
+
+```bash
+python -m osbaseline \
+  --linux osbaseline/samples/linux-web01 --linux osbaseline/samples/linux-db01 \
+  --windows osbaseline/samples/win-app01.json --windows osbaseline/samples/win-dc01.json
+# re-run later with --previous baseline_results.json to list drift; --fail-under 90 to gate CI
+```
+
+Sample output: hardened hosts score 100%; the weak Linux DB scores 9%; the Windows app server's SMBv1
+failure is shown as an approved exception (isolated VLAN + SIEM alerting, expires 2027-03-31) and
+excluded from its score.
+
 ## SIEM telemetry pipeline checks
 
 Enabling CloudTrail, GuardDuty and Security Hub is only half the job: the SOC sees only what reaches the SIEM. Three checks confirm each signal has a delivery path:

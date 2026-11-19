@@ -1,0 +1,11 @@
+{"name":"Windows Server 2022 Baseline (CIS L1 subset)","version":"1.0","platform":"windows","controls":[
+ {"id":"WIN-SMB-01","title":"SMBv1 disabled","source":"settings","key":"SMB1Protocol","expect":"Disabled","cis":"18.4.x","nist":"CM-7","severity":"HIGH"},
+ {"id":"WIN-NET-01","title":"LLMNR disabled","source":"settings","key":"EnableMulticast","expect":"0","cis":"18.5.4.2","nist":"SC-7","severity":"MEDIUM"},
+ {"id":"WIN-ACC-01","title":"Account lockout threshold 1-5","source":"settings","key":"LockoutBadCount","min":1,"max":5,"cis":"1.2.2","nist":"AC-7","severity":"MEDIUM"},
+ {"id":"WIN-ACC-02","title":"Minimum password length >= 14","source":"settings","key":"MinimumPasswordLength","min":14,"cis":"1.1.4","nist":"IA-5","severity":"MEDIUM"},
+ {"id":"WIN-ACC-03","title":"LAPS configured","source":"settings","key":"LAPSEnabled","expect":"1","cis":"18.3.x","nist":"IA-5","severity":"HIGH"},
+ {"id":"WIN-AUD-01","title":"Audit logon events (success and failure)","source":"settings","key":"AuditLogon","expect":"Success and Failure","cis":"17.5.3","nist":"AU-2","severity":"HIGH"},
+ {"id":"WIN-AUD-02","title":"Audit process creation","source":"settings","key":"AuditProcessCreation","expect":"Success","cis":"17.3.1","nist":"AU-12","severity":"MEDIUM"},
+ {"id":"WIN-UAC-01","title":"UAC enabled","source":"settings","key":"EnableLUA","expect":"1","cis":"2.3.17.6","nist":"AC-6","severity":"HIGH"},
+ {"id":"WIN-ENC-01","title":"BitLocker OS drive protection on","source":"settings","key":"BitLockerOS","expect":"On","cis":"18.10.9.x","nist":"SC-28","severity":"HIGH"},
+ {"id":"WIN-DEF-01","title":"Defender real-time protection on","source":"settings","key":"DefenderRealtime","expect":"1","cis":"18.10.43.x","nist":"SI-3","severity":"HIGH"}]}

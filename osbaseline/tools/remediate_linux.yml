@@ -1,0 +1,20 @@
+# Ansible playbook: enforce the Linux baseline (idempotent) so drift is fixed by the same code that set it.
+- hosts: linux_servers
+  become: true
+  tasks:
+    - name: SSH hardening
+      lineinfile: {path: /etc/ssh/sshd_config, regexp: "^#?{{ item.k }}", line: "{{ item.k }} {{ item.v }}"}
+      loop: [{k: PermitRootLogin, v: "no"}, {k: PasswordAuthentication, v: "no"}, {k: MaxAuthTries, v: "4"}, {k: X11Forwarding, v: "no"}]
+      notify: restart sshd
+    - name: Kernel network settings
+      sysctl: {name: "{{ item.k }}", value: "{{ item.v }}", state: present, reload: true}
+      loop: [{k: net.ipv4.ip_forward, v: "0"}, {k: net.ipv4.conf.all.accept_redirects, v: "0"}, {k: kernel.randomize_va_space, v: "2"}]
+    - name: Remove telnet server
+      package: {name: telnet-server, state: absent}
+    - name: Ensure auditd running
+      service: {name: auditd, state: started, enabled: true}
+    - name: Password minimum length
+      lineinfile: {path: /etc/security/pwquality.conf, regexp: "^#?minlen", line: "minlen = 14"}
+  handlers:
+    - name: restart sshd
+      service: {name: sshd, state: restarted}
